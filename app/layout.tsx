@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Poppins, Lora, Bebas_Neue, Dancing_Script } from "next/font/google";
+import { Inter, Barlow_Condensed, Anton, Bebas_Neue, Oswald, Passion_One, League_Gothic } from "next/font/google";
 import "./globals.css";
 
+// UI font plus every headline font offered in the pin editor (see lib/fonts.ts).
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-poppins" });
-const lora = Lora({ subsets: ["latin"], variable: "--font-lora" });
+const barlowCondensed = Barlow_Condensed({ subsets: ["latin"], weight: ["900"], variable: "--font-barlow-condensed" });
+const anton = Anton({ subsets: ["latin"], weight: "400", variable: "--font-anton" });
 const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400", variable: "--font-bebas" });
-const script = Dancing_Script({ subsets: ["latin"], variable: "--font-script" });
+const oswald = Oswald({ subsets: ["latin"], weight: ["700"], variable: "--font-oswald" });
+const passionOne = Passion_One({ subsets: ["latin"], weight: ["700"], variable: "--font-passion-one" });
+const leagueGothic = League_Gothic({ subsets: ["latin"], weight: "400", variable: "--font-league-gothic" });
+
+const fontVars = [inter, barlowCondensed, anton, bebas, oswald, passionOne, leagueGothic].map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
   title: "PinForge · Blog to Pinterest pin generator",
@@ -16,20 +20,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${playfair.variable} ${poppins.variable} ${lora.variable} ${bebas.variable} ${script.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${fontVars} h-full antialiased`}>
       <body className="min-h-full">
         {children}
-        {/* Touch every font family once so the browser fetches them before the first export. */}
+        {/* Touch every headline font once so the browser fetches it before the first export. */}
         <div aria-hidden className="font-preload">
-          <span style={{ fontFamily: "var(--font-playfair)", fontWeight: 700 }}>a</span>
-          <span style={{ fontFamily: "var(--font-poppins)", fontWeight: 700 }}>a</span>
-          <span style={{ fontFamily: "var(--font-lora)", fontWeight: 700 }}>a</span>
+          <span style={{ fontFamily: "var(--font-barlow-condensed)", fontWeight: 900 }}>a</span>
+          <span style={{ fontFamily: "var(--font-anton)" }}>a</span>
           <span style={{ fontFamily: "var(--font-bebas)" }}>a</span>
-          <span style={{ fontFamily: "var(--font-script)" }}>a</span>
-          <span style={{ fontFamily: "var(--font-inter)", fontWeight: 800 }}>a</span>
+          <span style={{ fontFamily: "var(--font-oswald)", fontWeight: 700 }}>a</span>
+          <span style={{ fontFamily: "var(--font-passion-one)", fontWeight: 700 }}>a</span>
+          <span style={{ fontFamily: "var(--font-league-gothic)" }}>a</span>
         </div>
       </body>
     </html>

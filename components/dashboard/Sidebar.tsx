@@ -12,16 +12,18 @@ export function Sidebar({
   recent,
   onOpenRecent,
   onClearRecent,
+  templateCount,
 }: {
   view: View;
   onView: (v: View) => void;
   recent: RecentEntry[];
   onOpenRecent: (entry: RecentEntry) => void;
   onClearRecent: () => void;
+  templateCount: number;
 }) {
-  const nav: { id: View; label: string; icon: React.ReactNode }[] = [
+  const nav: { id: View; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "generate", label: "Generate pins", icon: <Icon.Sparkles /> },
-    { id: "templates", label: "Templates", icon: <Icon.Layout /> },
+    { id: "templates", label: "Template library", icon: <Icon.Layout />, badge: templateCount },
   ];
 
   return (
@@ -48,7 +50,10 @@ export function Sidebar({
               }`}
             >
               <span className={active ? "text-brand" : "text-gray-400"}>{n.icon}</span>
-              {n.label}
+              <span className="flex-1 text-left">{n.label}</span>
+              {n.badge ? (
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${active ? "bg-brand text-white" : "bg-gray-100 text-gray-500"}`}>{n.badge}</span>
+              ) : null}
             </button>
           );
         })}

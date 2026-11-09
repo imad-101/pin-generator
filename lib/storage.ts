@@ -44,8 +44,8 @@ export function subscribeRecent(cb: () => void) {
 export const getRecentSnapshot = () => read();
 export const getRecentServerSnapshot = () => EMPTY;
 
-export function pushRecent(entry: RecentEntry) {
-  write([entry, ...read().filter((e) => e.url !== entry.url)].slice(0, 8));
+export function pushRecent(entry: Omit<RecentEntry, "at">) {
+  write([{ ...entry, at: Date.now() }, ...read().filter((e) => e.url !== entry.url)].slice(0, 8));
 }
 
 export function clearRecent() {

@@ -10,55 +10,26 @@ export type ScrapedPost = {
   headings: string[];
 };
 
-export type Palette = {
-  id: string;
-  name: string;
-  bg: string;
-  accent: string;
-  text: string;
-  onAccent: string;
-  muted: string;
-};
-
-export type FontPairing = {
-  id: string;
-  name: string;
-  heading: string; // CSS font-family value
-  body: string;
-  headingWeight: number;
-  headingScale: number; // multiplier applied to computed headline size
-  uppercase?: boolean;
-};
-
-export type TemplateId =
-  | "classic-split"
-  | "overlay-gradient"
-  | "card-float"
-  | "color-block"
-  | "polaroid"
-  | "minimal-serif"
-  | "magazine"
-  | "collage-band"
-  | "arch"
-  | "ribbon";
-
+/** A template in the library: a hand-coded React component that clones a reference pin exactly. */
 export type TemplateMeta = {
-  id: TemplateId;
+  id: string;
   name: string;
   description: string;
-  imagesUsed: number; // how many images the template consumes
+  imagesUsed: number; // how many photos the layout consumes
 };
 
 export type PinConfig = {
   id: string;
-  template: TemplateId;
-  paletteId: string;
-  fontId: string;
+  template: string; // TemplateMeta id
   headline: string;
   subtitle: string;
   cta: string;
   siteLabel: string;
   images: string[]; // original (unproxied) URLs, resolved through proxy at render time
+  /** Colour scheme from lib/palettes.ts. Omit for the template's exact reference colours. */
+  paletteId?: string;
+  /** Headline font from lib/fonts.ts. Omit for the template's exact reference font. */
+  fontId?: string;
   showCta: boolean;
   showSite: boolean;
   showSubtitle: boolean;

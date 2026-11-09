@@ -1,26 +1,33 @@
-import type { FontPairing } from "./types";
+/**
+ * Headline fonts selectable in the pin editor. Each is loaded with next/font in
+ * app/layout.tsx and exposed as a CSS variable. The first entry matches the
+ * reference pin; `scale` compensates for differing cap heights so swapping the
+ * font keeps the headline the same visual size.
+ */
+export type FontOption = {
+  id: string;
+  name: string;
+  family: string;
+  weight: number;
+  /** Multiplier applied to the template's font sizes. */
+  scale: number;
+  letterSpacing: string;
+};
 
-// CSS variables are defined by next/font in app/layout.tsx
-export const FONTS: FontPairing[] = [
-  { id: "editorial", name: "Editorial", heading: "var(--font-playfair)", body: "var(--font-inter)", headingWeight: 700, headingScale: 1 },
-  { id: "modern", name: "Modern", heading: "var(--font-poppins)", body: "var(--font-inter)", headingWeight: 700, headingScale: 0.95 },
-  { id: "classic", name: "Classic", heading: "var(--font-lora)", body: "var(--font-inter)", headingWeight: 700, headingScale: 0.98 },
-  { id: "bold", name: "Bold", heading: "var(--font-bebas)", body: "var(--font-inter)", headingWeight: 400, headingScale: 1.35, uppercase: true },
-  { id: "clean", name: "Clean", heading: "var(--font-inter)", body: "var(--font-inter)", headingWeight: 800, headingScale: 0.92 },
+export const FONT_OPTIONS: FontOption[] = [
+  { id: "barlow", name: "Barlow Condensed", family: "var(--font-barlow-condensed)", weight: 900, scale: 1, letterSpacing: "0em" },
+  { id: "anton", name: "Anton", family: "var(--font-anton)", weight: 400, scale: 0.92, letterSpacing: "0.01em" },
+  { id: "bebas", name: "Bebas Neue", family: "var(--font-bebas)", weight: 400, scale: 1.02, letterSpacing: "0.02em" },
+  { id: "oswald", name: "Oswald", family: "var(--font-oswald)", weight: 700, scale: 0.9, letterSpacing: "0em" },
+  { id: "passion", name: "Passion One", family: "var(--font-passion-one)", weight: 700, scale: 0.98, letterSpacing: "0em" },
+  { id: "league", name: "League Gothic", family: "var(--font-league-gothic)", weight: 400, scale: 1.04, letterSpacing: "0.01em" },
 ];
 
-export const SCRIPT_FONT = "var(--font-script)";
+export const DEFAULT_FONT_ID = FONT_OPTIONS[0].id;
 
-export function getFont(id: string): FontPairing {
-  return FONTS.find((f) => f.id === id) ?? FONTS[0];
+export function getFontOption(id: string | undefined): FontOption {
+  return FONT_OPTIONS.find((f) => f.id === id) ?? FONT_OPTIONS[0];
 }
 
-/** Headline size in px for a 1000x1500 canvas, based on text length. */
-export function headlineSize(text: string, base = 84): number {
-  const len = text.trim().length;
-  if (len > 110) return base * 0.6;
-  if (len > 80) return base * 0.72;
-  if (len > 55) return base * 0.85;
-  if (len > 35) return base;
-  return base * 1.12;
-}
+/** UI font */
+export const UI_FONT = "var(--font-inter)";

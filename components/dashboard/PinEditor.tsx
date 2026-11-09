@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { PinConfig, ScrapedPost, TemplateId } from "@/lib/types";
+import type { PinConfig, ScrapedPost } from "@/lib/types";
 import { TEMPLATES, getTemplate } from "@/lib/templates";
-import { PALETTES } from "@/lib/palettes";
-import { FONTS } from "@/lib/fonts";
 import { CTA_OPTIONS, buildHeadlines } from "@/lib/generate";
+import { PALETTES, DEFAULT_PALETTE_ID } from "@/lib/palettes";
+import { FONT_OPTIONS, DEFAULT_FONT_ID } from "@/lib/fonts";
 import { proxied } from "@/lib/proxy";
 import { PinFrame } from "@/components/pins/PinFrame";
 import { PinRenderer } from "@/components/pins/PinRenderer";
@@ -29,7 +29,8 @@ export function PinEditor({
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const template = getTemplate(pin.template);
-  const slot = slotState < template.imagesUsed ? slotState : 0;
+  const imagesUsed = template?.imagesUsed ?? 1;
+  const slot = slotState < imagesUsed ? slotState : 0;
   const imagePool = [...uploads, ...(post?.images ?? []), ...pin.images.filter((i) => !post?.images.includes(i) && !uploads.includes(i))];
   const headlineIdeas = post ? buildHeadlines(post) : [];
 
@@ -46,8 +47,8 @@ export function PinEditor({
   }, [onClose]);
 
   const pickImage = (src: string) => {
-    const next = pin.images.slice(0, template.imagesUsed);
-    while (next.length < template.imagesUsed) next.push(next[0] ?? src);
+    const next = pin.images.slice(0, imagesUsed);
+    while (next.length < imagesUsed) next.push(next[0] ?? src);
     next[slot] = src;
     set("images", next);
   };
@@ -79,7 +80,7 @@ export function PinEditor({
         <header className="flex items-center justify-between border-b border-gray-200 px-5 py-3">
           <div>
             <div className="text-sm font-semibold">Edit pin</div>
-            <div className="text-xs text-gray-400">{template.name} · 1000 × 1500 (exports at 2×)</div>
+            <div className="text-xs text-gray-400">{template?.name ?? pin.template} · 1000 × 1500 (exports at 2×)</div>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -99,12 +100,11 @@ export function PinEditor({
         <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           {/* Preview */}
           <div className="flex items-center justify-center overflow-hidden bg-gray-100 p-4 md:p-8">
-            <div className="h-full" style={{ aspectRatio: "2 / 3", maxWidth: "100%" }}>
-              <div className="mx-auto h-full w-full overflow-hidden rounded-xl shadow-xl" style={{ maxHeight: "100%", aspectRatio: "2 / 3" }}>
-                <PinFrame>
-                  <PinRenderer config={pin} />
-                </PinFrame>
-              </div>
+            {/* Wrapper is as tall as the pane and 2:3 wide, clamped to the pane width; the pin centres inside it. */}
+            <div className="flex h-full items-center" style={{ aspectRatio: "2 / 3", maxWidth: "100%" }}>
+              <PinFrame className="overflow-hidden rounded-xl shadow-xl">
+                <PinRenderer config={pin} />
+              </PinFrame>
             </div>
           </div>
 
@@ -112,12 +112,7 @@ export function PinEditor({
           <div className="overflow-y-auto p-5 thin-scroll">
             <Section title="Copy">
               <Field label="Headline">
-                <textarea
-                  value={pin.headline}
-                  onChange={(e) => set("headline", e.target.value)}
-                  rows={2}
-                  className={inputCls}
-                />
+                <textarea value={pin.headline} onChange={(e) => set("headline", e.target.value)} rows={2} className={inputCls} />
                 {headlineIdeas.length > 1 && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {headlineIdeas.map((h) => (
@@ -152,36 +147,37 @@ export function PinEditor({
               </div>
             </Section>
 
-            <Section title="Layout">
-              <div className="grid grid-cols-5 gap-2">
-                {TEMPLATES.map((t) => {
-                  const active = t.id === pin.template;
-                  const previewImages = pin.images.length ? pin.images : [];
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        const images = pin.images.slice(0, t.imagesUsed);
-                        while (images.length < t.imagesUsed && imagePool.length) images.push(imagePool[images.length % imagePool.length]);
-                        onChange({ ...pin, template: t.id as TemplateId, images });
-                      }}
-                      title={t.description}
-                      className={`overflow-hidden rounded-lg border-2 transition ${active ? "border-brand" : "border-transparent hover:border-gray-300"}`}
-                    >
-                      <PinFrame>
-                        <PinRenderer config={{ ...pin, template: t.id as TemplateId, images: previewImages }} />
-                      </PinFrame>
-                      <div className={`py-1 text-center text-[10px] font-medium ${active ? "text-brand" : "text-gray-500"}`}>{t.name}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </Section>
+            {TEMPLATES.length > 1 && (
+              <Section title="Template">
+                <div className="grid grid-cols-5 gap-2">
+                  {TEMPLATES.map((t) => {
+                    const active = t.id === pin.template;
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => {
+                          const images = pin.images.slice(0, t.imagesUsed);
+                          while (images.length < t.imagesUsed && imagePool.length) images.push(imagePool[images.length % imagePool.length]);
+                          onChange({ ...pin, template: t.id, images });
+                        }}
+                        title={t.description}
+                        className={`overflow-hidden rounded-lg border-2 transition ${active ? "border-brand" : "border-transparent hover:border-gray-300"}`}
+                      >
+                        <PinFrame>
+                          <PinRenderer config={{ ...pin, template: t.id }} />
+                        </PinFrame>
+                        <div className={`py-1 text-center text-[10px] font-medium ${active ? "text-brand" : "text-gray-500"}`}>{t.name}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Section>
+            )}
 
-            <Section title="Colours">
+            <Section title="Colour scheme">
               <div className="flex flex-wrap gap-2">
                 {PALETTES.map((p) => {
-                  const active = p.id === pin.paletteId;
+                  const active = (pin.paletteId ?? DEFAULT_PALETTE_ID) === p.id;
                   return (
                     <button
                       key={p.id}
@@ -191,10 +187,11 @@ export function PinEditor({
                         active ? "border-brand bg-brand-soft text-brand" : "border-gray-200 text-gray-600 hover:border-gray-400"
                       }`}
                     >
-                      <span className="flex -space-x-1">
-                        <span className="h-4 w-4 rounded-full border border-black/10" style={{ background: p.bg }} />
-                        <span className="h-4 w-4 rounded-full border border-black/10" style={{ background: p.accent }} />
-                        <span className="h-4 w-4 rounded-full border border-black/10" style={{ background: p.text }} />
+                      <span
+                        className="grid h-5 w-5 place-items-center rounded-full border border-black/10 text-[10px] font-black leading-none"
+                        style={{ background: p.bg, color: p.text, WebkitTextStroke: `1px ${p.outline}` }}
+                      >
+                        A
                       </span>
                       {p.name}
                     </button>
@@ -203,23 +200,18 @@ export function PinEditor({
               </div>
             </Section>
 
-            <Section title="Typography">
+            <Section title="Font">
               <div className="flex flex-wrap gap-2">
-                {FONTS.map((f) => {
-                  const active = f.id === pin.fontId;
+                {FONT_OPTIONS.map((f) => {
+                  const active = (pin.fontId ?? DEFAULT_FONT_ID) === f.id;
                   return (
                     <button
                       key={f.id}
                       onClick={() => set("fontId", f.id)}
-                      className={`rounded-xl border px-3 py-2 text-left transition ${
-                        active ? "border-brand bg-brand-soft" : "border-gray-200 hover:border-gray-400"
-                      }`}
+                      className={`rounded-xl border px-3 py-2 text-left transition ${active ? "border-brand bg-brand-soft" : "border-gray-200 hover:border-gray-400"}`}
                     >
-                      <div
-                        style={{ fontFamily: f.heading, fontWeight: f.headingWeight, textTransform: f.uppercase ? "uppercase" : "none" }}
-                        className="text-lg leading-none text-gray-900"
-                      >
-                        Aa
+                      <div style={{ fontFamily: f.family, fontWeight: f.weight, letterSpacing: f.letterSpacing }} className="text-xl uppercase leading-none text-gray-900">
+                        Aa 21
                       </div>
                       <div className={`mt-1 text-[11px] font-medium ${active ? "text-brand" : "text-gray-500"}`}>{f.name}</div>
                     </button>
@@ -231,24 +223,19 @@ export function PinEditor({
             <Section
               title="Photo"
               action={
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
-                >
+                <button onClick={() => fileRef.current?.click()} className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
                   <Icon.Upload width={14} height={14} /> Upload
                 </button>
               }
             >
               <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => upload(e.target.files)} />
-              {template.imagesUsed > 1 && (
+              {imagesUsed > 1 && (
                 <div className="mb-2 flex gap-1.5">
-                  {Array.from({ length: template.imagesUsed }).map((_, i) => (
+                  {Array.from({ length: imagesUsed }).map((_, i) => (
                     <button
                       key={i}
                       onClick={() => setSlot(i)}
-                      className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                        slot === i ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600"
-                      }`}
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${slot === i ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600"}`}
                     >
                       Photo {i + 1}
                     </button>
@@ -297,15 +284,7 @@ function Section({ title, action, children }: { title: string; action?: React.Re
   );
 }
 
-function Field({
-  label,
-  toggle,
-  children,
-}: {
-  label: string;
-  toggle?: { on: boolean; set: (v: boolean) => void };
-  children: React.ReactNode;
-}) {
+function Field({ label, toggle, children }: { label: string; toggle?: { on: boolean; set: (v: boolean) => void }; children: React.ReactNode }) {
   return (
     <div className="mb-3">
       <div className="mb-1 flex items-center justify-between">

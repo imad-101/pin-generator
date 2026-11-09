@@ -3,7 +3,6 @@
 import { useState } from "react";
 import type { PinConfig } from "@/lib/types";
 import { getTemplate } from "@/lib/templates";
-import { getPalette } from "@/lib/palettes";
 import { PinFrame } from "@/components/pins/PinFrame";
 import { PinRenderer } from "@/components/pins/PinRenderer";
 import { Icon } from "./icons";
@@ -22,7 +21,6 @@ export function PinCard({
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const template = getTemplate(pin.template);
-  const palette = getPalette(pin.paletteId);
 
   const download = async () => {
     if (busy) return;
@@ -47,7 +45,7 @@ export function PinCard({
             <ActionButton label="Edit" onClick={onEdit}>
               <Icon.Edit width={16} height={16} />
             </ActionButton>
-            <ActionButton label="Shuffle look" onClick={onShuffle}>
+            <ActionButton label="Swap photo" onClick={onShuffle}>
               <Icon.Shuffle width={16} height={16} />
             </ActionButton>
             <button
@@ -61,16 +59,9 @@ export function PinCard({
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-        <div className="min-w-0">
-          <div className="truncate text-xs font-semibold text-gray-800">{template.name}</div>
-          <div className="truncate text-[11px] text-gray-400">{pin.headline}</div>
-        </div>
-        <span
-          className="h-4 w-4 shrink-0 rounded-full border border-black/10"
-          style={{ background: palette.accent }}
-          title={palette.name}
-        />
+      <div className="px-3 py-2.5">
+        <div className="truncate text-xs font-semibold text-gray-800">{template?.name ?? pin.template}</div>
+        <div className="truncate text-[11px] text-gray-400">{pin.headline}</div>
       </div>
     </div>
   );

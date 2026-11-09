@@ -1,32 +1,37 @@
+import type { ComponentType } from "react";
 import type { PinConfig } from "@/lib/types";
-import { getPalette } from "@/lib/palettes";
-import { getFont } from "@/lib/fonts";
-import { ClassicSplit } from "./templates/ClassicSplit";
-import { OverlayGradient } from "./templates/OverlayGradient";
-import { CardFloat } from "./templates/CardFloat";
-import { ColorBlock } from "./templates/ColorBlock";
-import { Polaroid } from "./templates/Polaroid";
-import { MinimalSerif } from "./templates/MinimalSerif";
-import { Magazine } from "./templates/Magazine";
-import { CollageBand } from "./templates/CollageBand";
-import { Arch } from "./templates/Arch";
-import { Ribbon } from "./templates/Ribbon";
+import { LaundryCollage } from "./templates/LaundryCollage";
 
-const REGISTRY = {
-  "classic-split": ClassicSplit,
-  "overlay-gradient": OverlayGradient,
-  "card-float": CardFloat,
-  "color-block": ColorBlock,
-  polaroid: Polaroid,
-  "minimal-serif": MinimalSerif,
-  magazine: Magazine,
-  "collage-band": CollageBand,
-  arch: Arch,
-  ribbon: Ribbon,
-} as const;
+export type TemplateProps = { config: PinConfig };
+
+/**
+ * Template id → component. Register each cloned template here and describe it
+ * in lib/templates.ts.
+ */
+const REGISTRY: Record<string, ComponentType<TemplateProps>> = {
+  "laundry-collage": LaundryCollage,
+};
 
 /** Renders a pin at its native 1000x1500 size. Wrap in <PinFrame> to scale for previews. */
 export function PinRenderer({ config }: { config: PinConfig }) {
-  const Template = REGISTRY[config.template] ?? ClassicSplit;
-  return <Template config={config} palette={getPalette(config.paletteId)} font={getFont(config.fontId)} />;
+  const Template = REGISTRY[config.template];
+  if (!Template) {
+    return (
+      <div
+        style={{
+          width: 1000,
+          height: 1500,
+          display: "grid",
+          placeItems: "center",
+          background: "#F3F4F6",
+          color: "#9CA3AF",
+          fontFamily: "var(--font-inter)",
+          fontSize: 36,
+        }}
+      >
+        Unknown template “{config.template}”
+      </div>
+    );
+  }
+  return <Template config={config} />;
 }

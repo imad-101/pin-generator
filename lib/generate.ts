@@ -1,7 +1,5 @@
-import type { PinConfig, ScrapedPost, TemplateId } from "./types";
+import type { PinConfig, ScrapedPost, TemplateMeta } from "./types";
 import { TEMPLATES } from "./templates";
-import { PALETTES } from "./palettes";
-import { FONTS } from "./fonts";
 
 export const CTA_OPTIONS = ["Read the post", "Read more", "Get the guide", "See how", "Learn more", "Save for later"];
 
@@ -51,7 +49,12 @@ export function buildHeadlines(post: ScrapedPost): string[] {
   const title = cleanTitle(post.title, post.siteName);
   const out = [title];
   for (const h of post.headings) {
-    if (h.toLowerCase() !== title.toLowerCase() && h.length >= 18 && h.length <= 80 && !/comments?|share|related|subscribe|newsletter|about|table of contents/i.test(h)) {
+    if (
+      h.toLowerCase() !== title.toLowerCase() &&
+      h.length >= 18 &&
+      h.length <= 80 &&
+      !/comments?|share|related|subscribe|newsletter|about|table of contents/i.test(h)
+    ) {
       out.push(h);
     }
     if (out.length >= 4) break;
@@ -65,61 +68,60 @@ export function siteLabelFor(post: ScrapedPost): string {
 }
 
 export type GenerateOptions = {
-  count: number;
-  seed: number;
+  /** Maximum pins to produce. Omit for every template × every photo. */
+  limit?: number;
+  /** Omit for a fresh random order each call. */
+  seed?: number;
+  /** Photos per template. Default 3. */
+  photosPerTemplate?: number;
 };
 
-export function generatePins(post: ScrapedPost, { count, seed }: GenerateOptions): PinConfig[] {
+/**
+ * Fill every template in the library with the post. Each template is paired
+ * with several of the post's photos so the set covers the whole article.
+ */
+export function generatePins(post: ScrapedPost, { limit, seed: seedIn, photosPerTemplate = 3 }: GenerateOptions = {}): PinConfig[] {
+  const seed = seedIn ?? Date.now();
   const rand = rng(seed);
   const headlines = buildHeadlines(post);
   const subtitle = truncate(post.description, 120);
   const siteLabel = siteLabelFor(post);
-  const images = post.images;
-
-  const templateOrder = shuffle(TEMPLATES, rand);
-  const paletteOrder = shuffle(PALETTES, rand);
-  const fontOrder = shuffle(FONTS, rand);
-  const imageOrder = shuffle(images, rand);
-  const ctaOrder = shuffle(CTA_OPTIONS, rand);
+  const images = shuffle(post.images, rand);
+  const ctas = shuffle(CTA_OPTIONS, rand);
 
   const pins: PinConfig[] = [];
-  for (let i = 0; i < count; i++) {
-    const template = templateOrder[i % templateOrder.length];
-    const palette = paletteOrder[i % paletteOrder.length];
-    const font = fontOrder[i % fontOrder.length];
-    // Lead with the real title most of the time, sprinkle in section headings.
-    const headline = i % 3 === 2 && headlines.length > 1 ? headlines[1 + ((i >> 1) % (headlines.length - 1))] : headlines[0];
-    const imgs: string[] = [];
-    for (let k = 0; k < template.imagesUsed && imageOrder.length; k++) {
-      imgs.push(imageOrder[(i + k) % imageOrder.length]);
+  const photoSets = Math.max(1, Math.min(photosPerTemplate, images.length));
+  for (const template of TEMPLATES) {
+    for (let p = 0; p < photoSets; p++) {
+      const imgs: string[] = [];
+      for (let k = 0; k < template.imagesUsed && images.length; k++) imgs.push(images[(p + k) % images.length]);
+      const i = pins.length;
+      pins.push({
+        id: `${seed}-${i}`,
+        template: template.id,
+        headline: p > 0 && headlines.length > 1 ? headlines[p % headlines.length] : headlines[0],
+        subtitle,
+        cta: ctas[i % ctas.length],
+        siteLabel,
+        images: imgs,
+        showCta: true,
+        showSite: true,
+        showSubtitle: subtitle.length > 0,
+      });
     }
-    pins.push({
-      id: `${seed}-${i}`,
-      template: template.id as TemplateId,
-      paletteId: palette.id,
-      fontId: font.id,
-      headline,
-      subtitle,
-      cta: ctaOrder[i % ctaOrder.length],
-      siteLabel,
-      images: imgs,
-      showCta: true,
-      showSite: true,
-      showSubtitle: subtitle.length > 0 && i % 4 !== 3,
-    });
   }
-  return pins;
+  const ordered = shuffle(pins, rand);
+  return limit ? ordered.slice(0, limit) : ordered;
 }
 
-/** Re-roll a single pin's look while keeping its copy. */
-export function reshufflePin(pin: PinConfig, post: ScrapedPost, seed: number): PinConfig {
-  const rand = rng(seed);
-  const template = TEMPLATES[Math.floor(rand() * TEMPLATES.length)];
-  const palette = PALETTES[Math.floor(rand() * PALETTES.length)];
-  const font = FONTS[Math.floor(rand() * FONTS.length)];
-  const imgs: string[] = [];
+/** Give a single pin a different photo (and template, if more than one exists) while keeping its copy. */
+export function reshufflePin(pin: PinConfig, post: ScrapedPost, seed?: number): PinConfig {
+  const rand = rng(seed ?? Date.now() + Math.floor(Math.random() * 1000));
+  const template: TemplateMeta | undefined = TEMPLATES[Math.floor(rand() * TEMPLATES.length)];
+  if (!template) return pin;
   const pool = post.images.length ? post.images : pin.images;
   const start = Math.floor(rand() * Math.max(1, pool.length));
+  const imgs: string[] = [];
   for (let k = 0; k < template.imagesUsed && pool.length; k++) imgs.push(pool[(start + k) % pool.length]);
-  return { ...pin, template: template.id as TemplateId, paletteId: palette.id, fontId: font.id, images: imgs };
+  return { ...pin, template: template.id, images: imgs };
 }

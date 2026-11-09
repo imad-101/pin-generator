@@ -1,40 +1,22 @@
-import type { CSSProperties, ReactNode } from "react";
-import type { Palette, FontPairing, PinConfig } from "@/lib/types";
-import { headlineSize, SCRIPT_FONT } from "@/lib/fonts";
+"use client";
+
+import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { proxied } from "@/lib/proxy";
+import { PIN_WIDTH, PIN_HEIGHT } from "@/lib/types";
 
-export type TemplateProps = {
-  config: PinConfig;
-  palette: Palette;
-  font: FontPairing;
-};
+/** The 1000 × 1500 pin surface. Templates position everything absolutely inside it. */
+export function Canvas({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return (
+    <div style={{ position: "relative", width: PIN_WIDTH, height: PIN_HEIGHT, overflow: "hidden", ...style }}>
+      {children}
+    </div>
+  );
+}
 
-/** Photo that fills its box; falls back to a soft gradient when there is no image. */
-export function PinImage({
-  src,
-  palette,
-  style,
-  className,
-}: {
-  src?: string;
-  palette: Palette;
-  style?: CSSProperties;
-  className?: string;
-}) {
+/** Photo that fills its box; falls back to a flat colour when there is no image. */
+export function PinImage({ src, fallback = "#D6D3D1", style }: { src?: string; fallback?: string; style?: CSSProperties }) {
   const url = proxied(src);
-  if (!url) {
-    return (
-      <div
-        className={className}
-        style={{
-          width: "100%",
-          height: "100%",
-          background: `linear-gradient(135deg, ${palette.accent}cc 0%, ${palette.accent}55 55%, ${palette.bg} 100%)`,
-          ...style,
-        }}
-      />
-    );
-  }
+  if (!url) return <div style={{ width: "100%", height: "100%", background: fallback, ...style }} />;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -42,173 +24,94 @@ export function PinImage({
       alt=""
       crossOrigin="anonymous"
       draggable={false}
-      className={className}
       style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", ...style }}
     />
   );
 }
 
-export function Headline({
+export type TextStroke = { width: number; color: string };
+
+/**
+ * Text that keeps the template's exact font size whenever it fits, and only
+ * shrinks when a long headline would overflow the box the reference pin gave it.
+ * With `stroke`, draws an outlined copy behind the fill so the outline sits
+ * outside the letterforms (like a sticker) instead of eating into them.
+ */
+export function FitText({
   text,
-  font,
-  color,
-  base = 84,
-  align = "left",
+  size,
+  minSize = 18,
+  stroke,
   style,
+  align = "center",
+  valign = "middle",
 }: {
   text: string;
-  font: FontPairing;
-  color: string;
-  base?: number;
+  size: number;
+  minSize?: number;
+  stroke?: TextStroke;
+  style?: CSSProperties;
   align?: "left" | "center" | "right";
-  style?: CSSProperties;
+  valign?: "top" | "middle" | "bottom";
 }) {
-  const size = headlineSize(text, base) * font.headingScale;
-  return (
-    <h1
-      style={{
-        fontFamily: font.heading,
-        fontWeight: font.headingWeight,
-        fontSize: size,
-        lineHeight: font.uppercase ? 1 : 1.12,
-        letterSpacing: font.uppercase ? "0.01em" : "-0.015em",
-        textTransform: font.uppercase ? "uppercase" : "none",
-        color,
-        margin: 0,
-        textAlign: align,
-        overflowWrap: "anywhere",
-        ...style,
-      }}
-    >
-      {text}
-    </h1>
-  );
-}
+  const box = useRef<HTMLDivElement>(null);
+  const el = useRef<HTMLDivElement>(null);
 
-export function Subtitle({
-  text,
-  font,
-  color,
-  size = 30,
-  align = "left",
-  style,
-}: {
-  text: string;
-  font: FontPairing;
-  color: string;
-  size?: number;
-  align?: "left" | "center" | "right";
-  style?: CSSProperties;
-}) {
-  if (!text) return null;
-  return (
-    <p
-      style={{
-        fontFamily: font.body,
-        fontSize: size,
-        lineHeight: 1.4,
-        color,
-        margin: 0,
-        textAlign: align,
-        ...style,
-      }}
-    >
-      {text}
-    </p>
-  );
-}
+  useLayoutEffect(() => {
+    const node = el.current;
+    const container = box.current;
+    if (!node || !container) return;
+    const fit = () => {
+      const fits = (s: number) => {
+        container.style.setProperty("--fit-size", `${s}px`);
+        return node.scrollHeight <= container.clientHeight + 1 && node.scrollWidth <= container.clientWidth + 1;
+      };
+      if (fits(size)) return;
+      let lo = minSize;
+      let hi = size;
+      while (hi - lo > 1) {
+        const mid = Math.floor((lo + hi) / 2);
+        if (fits(mid)) lo = mid;
+        else hi = mid;
+      }
+      container.style.setProperty("--fit-size", `${lo}px`);
+    };
+    fit();
+    let cancelled = false;
+    document.fonts?.ready.then(() => !cancelled && fit());
+    return () => {
+      cancelled = true;
+    };
+  }, [text, size, minSize, style?.fontFamily, style?.fontWeight, style?.letterSpacing, style?.textTransform, style?.lineHeight]);
 
-export function CtaButton({
-  text,
-  font,
-  bg,
-  color,
-  style,
-}: {
-  text: string;
-  font: FontPairing;
-  bg: string;
-  color: string;
-  style?: CSSProperties;
-}) {
+  const textStyle: CSSProperties = { fontSize: "var(--fit-size)", textAlign: align, whiteSpace: "pre-wrap", ...style };
+  const justify = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
+  const alignItems = valign === "middle" ? "center" : valign === "bottom" ? "flex-end" : "flex-start";
+
   return (
     <div
-      style={{
-        display: "inline-block",
-        fontFamily: font.body,
-        fontWeight: 700,
-        fontSize: 28,
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
-        padding: "22px 44px",
-        borderRadius: 999,
-        background: bg,
-        color,
-        whiteSpace: "nowrap",
-        ...style,
-      }}
+      ref={box}
+      style={{ "--fit-size": `${size}px`, width: "100%", height: "100%", overflow: "visible", display: "flex", justifyContent: justify, alignItems } as CSSProperties}
     >
-      {text}
-    </div>
-  );
-}
-
-export function SiteLabel({
-  text,
-  font,
-  color,
-  size = 26,
-  style,
-}: {
-  text: string;
-  font: FontPairing;
-  color: string;
-  size?: number;
-  style?: CSSProperties;
-}) {
-  return (
-    <div
-      style={{
-        fontFamily: font.body,
-        fontWeight: 600,
-        fontSize: size,
-        letterSpacing: "0.18em",
-        textTransform: "uppercase",
-        color,
-        ...style,
-      }}
-    >
-      {text}
-    </div>
-  );
-}
-
-export function ScriptLabel({
-  text,
-  color,
-  size = 56,
-  style,
-}: {
-  text: string;
-  color: string;
-  size?: number;
-  style?: CSSProperties;
-}) {
-  return <div style={{ fontFamily: SCRIPT_FONT, fontSize: size, color, lineHeight: 1, ...style }}>{text}</div>;
-}
-
-export function Canvas({ children, style }: { children: ReactNode; style?: CSSProperties }) {
-  return (
-    <div
-      style={{
-        position: "relative",
-        width: 1000,
-        height: 1500,
-        overflow: "hidden",
-        ...style,
-      }}
-    >
-      {children}
+      <div style={{ position: "relative", maxWidth: "100%" }}>
+        {stroke && (
+          <div
+            aria-hidden
+            style={{
+              ...textStyle,
+              position: "absolute",
+              inset: 0,
+              color: stroke.color,
+              WebkitTextStroke: `${stroke.width * 2}px ${stroke.color}`,
+            }}
+          >
+            {text}
+          </div>
+        )}
+        <div ref={el} style={{ ...textStyle, position: "relative" }}>
+          {text}
+        </div>
+      </div>
     </div>
   );
 }
