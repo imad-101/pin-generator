@@ -20,7 +20,6 @@ type Status = "idle" | "loading" | "ready";
 export function Dashboard() {
   const [view, setView] = useState<View>("generate");
   const [url, setUrl] = useState("");
-  const [count, setCount] = useState(12);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [post, setPost] = useState<ScrapedPost | null>(null);
@@ -40,13 +39,13 @@ export function Dashboard() {
   const applyPost = useCallback(
     (p: ScrapedPost, remember: boolean) => {
       setPost(p);
-      setPins(generatePins(p, { limit: count }));
+      setPins(generatePins(p));
       setStatus("ready");
       setFilter("all");
       setView("generate");
       if (remember) pushRecent({ url: p.url, title: p.title, domain: p.domain, favicon: p.favicon });
     },
-    [count],
+    [],
   );
 
   const generate = useCallback(
@@ -88,7 +87,7 @@ export function Dashboard() {
   }, [generate]);
 
   const visiblePins = filter === "all" ? pins : pins.filter((p) => p.template === filter);
-  const shuffleAll = () => post && setPins(generatePins(post, { limit: count }));
+  const shuffleAll = () => post && setPins(generatePins(post));
   const updatePin = (next: PinConfig) => setPins((ps) => ps.map((p) => (p.id === next.id ? next : p)));
   const shuffleOne = (id: string) => post && setPins((ps) => ps.map((p) => (p.id === id ? reshufflePin(p, post) : p)));
 
@@ -166,8 +165,6 @@ export function Dashboard() {
                 key={url}
                 initialUrl={url}
                 loading={status === "loading"}
-                count={count}
-                onCount={setCount}
                 onSubmit={generate}
                 onSample={() => applyPost(SAMPLE_POST, false)}
               />
@@ -188,7 +185,7 @@ export function Dashboard() {
                 </div>
               )}
 
-              {status === "loading" && <LoadingState count={count} />}
+              {status === "loading" && <LoadingState count={TEMPLATES.length} />}
 
               {status === "ready" && post && (
                 <div className="mt-5 space-y-5">
@@ -266,7 +263,7 @@ function LoadingState({ count }: { count: number }) {
     <div className="mt-5 space-y-5">
       <div className="h-28 rounded-2xl shimmer" />
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-        {Array.from({ length: Math.min(count, 10) }).map((_, i) => (
+        {Array.from({ length: Math.max(1, Math.min(count, 10)) }).map((_, i) => (
           <div key={i} className="rounded-2xl shimmer" style={{ aspectRatio: "2 / 3.3" }} />
         ))}
       </div>
@@ -276,7 +273,7 @@ function LoadingState({ count }: { count: number }) {
 
 function EmptyState() {
   const steps = [
-    { n: "1", title: "Paste a post URL", body: "We pull the title, description, headings and images from any public blog post." },
+    { n: "1", title: "Paste a post URL", body: "We pull the title, description and images from any public blog post." },
     { n: "2", title: "Every template is filled", body: "Each layout in the library is an exact clone of a reference pin, rendered with your photos and copy." },
     { n: "3", title: "Download the set", body: "Tweak copy or photos, then export 2000 × 3000 PNGs or a zip of the whole set." },
   ];

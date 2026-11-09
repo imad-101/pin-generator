@@ -3,7 +3,7 @@
 import type { PinConfig, ScrapedPost } from "@/lib/types";
 import { TEMPLATES } from "@/lib/templates";
 import { SAMPLE_POST } from "@/lib/sample";
-import { buildHeadlines, siteLabelFor, truncate } from "@/lib/generate";
+import { headlineFor, siteLabelFor, truncate } from "@/lib/generate";
 import { PinFrame } from "@/components/pins/PinFrame";
 import { PinRenderer } from "@/components/pins/PinRenderer";
 import { Icon } from "./icons";
@@ -13,7 +13,7 @@ export function sampleConfigFor(post: ScrapedPost | null, templateId: string): P
   return {
     id: `tpl-${templateId}`,
     template: templateId,
-    headline: buildHeadlines(source)[0],
+    headline: headlineFor(source),
     subtitle: truncate(source.description, 120),
     cta: "Read the post",
     siteLabel: siteLabelFor(source),

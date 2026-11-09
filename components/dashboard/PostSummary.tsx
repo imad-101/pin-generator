@@ -30,9 +30,6 @@ export function PostSummary({ post }: { post: ScrapedPost }) {
             <span className="rounded-full bg-gray-100 px-2.5 py-1 text-gray-600">
               {post.images.length} image{post.images.length === 1 ? "" : "s"} found
             </span>
-            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-gray-600">
-              {post.headings.length} heading{post.headings.length === 1 ? "" : "s"}
-            </span>
             {post.author && <span className="rounded-full bg-gray-100 px-2.5 py-1 text-gray-600">by {post.author}</span>}
           </div>
         </div>

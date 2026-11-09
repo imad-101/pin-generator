@@ -12,6 +12,21 @@ export const TEMPLATES: TemplateMeta[] = [
     name: "Collage grid",
     description: "Five-photo collage (wide photo behind the headline) with a big outlined number and heavy caps.",
     imagesUsed: 5,
+    defaultFontId: "barlow",
+  },
+  {
+    id: "band-badge",
+    name: "Band & badge",
+    description: "Four photos around a solid headline band, with a bordered number badge and the site URL at the bottom.",
+    imagesUsed: 4,
+    defaultFontId: "fredoka",
+  },
+  {
+    id: "moodboard-card",
+    name: "Moodboard card",
+    description: "2 × 2 photo grid with a cream centre card and a bold serif title-case headline.",
+    imagesUsed: 4,
+    defaultFontId: "lora",
   },
 ];
 

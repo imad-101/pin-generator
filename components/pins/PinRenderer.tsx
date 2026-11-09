@@ -1,6 +1,8 @@
 import type { ComponentType } from "react";
 import type { PinConfig } from "@/lib/types";
 import { LaundryCollage } from "./templates/LaundryCollage";
+import { BandBadge } from "./templates/BandBadge";
+import { MoodboardCard } from "./templates/MoodboardCard";
 
 export type TemplateProps = { config: PinConfig };
 
@@ -10,6 +12,8 @@ export type TemplateProps = { config: PinConfig };
  */
 const REGISTRY: Record<string, ComponentType<TemplateProps>> = {
   "laundry-collage": LaundryCollage,
+  "band-badge": BandBadge,
+  "moodboard-card": MoodboardCard,
 };
 
 /** Renders a pin at its native 1000x1500 size. Wrap in <PinFrame> to scale for previews. */

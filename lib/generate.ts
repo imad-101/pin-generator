@@ -45,21 +45,9 @@ export function cleanTitle(title: string, siteName: string): string {
   return t;
 }
 
-export function buildHeadlines(post: ScrapedPost): string[] {
-  const title = cleanTitle(post.title, post.siteName);
-  const out = [title];
-  for (const h of post.headings) {
-    if (
-      h.toLowerCase() !== title.toLowerCase() &&
-      h.length >= 18 &&
-      h.length <= 80 &&
-      !/comments?|share|related|subscribe|newsletter|about|table of contents/i.test(h)
-    ) {
-      out.push(h);
-    }
-    if (out.length >= 4) break;
-  }
-  return out;
+/** The headline is always the post's own title, cleaned of any " | Site" suffix. */
+export function headlineFor(post: ScrapedPost): string {
+  return cleanTitle(post.title, post.siteName);
 }
 
 export function siteLabelFor(post: ScrapedPost): string {
@@ -68,50 +56,39 @@ export function siteLabelFor(post: ScrapedPost): string {
 }
 
 export type GenerateOptions = {
-  /** Maximum pins to produce. Omit for every template × every photo. */
-  limit?: number;
-  /** Omit for a fresh random order each call. */
+  /** Omit for a fresh random photo order each call. */
   seed?: number;
-  /** Photos per template. Default 3. */
-  photosPerTemplate?: number;
 };
 
 /**
- * Fill every template in the library with the post. Each template is paired
- * with several of the post's photos so the set covers the whole article.
+ * One pin per template in the library, each carrying the post's title as its
+ * headline and a random selection of the post's photos.
  */
-export function generatePins(post: ScrapedPost, { limit, seed: seedIn, photosPerTemplate = 3 }: GenerateOptions = {}): PinConfig[] {
+export function generatePins(post: ScrapedPost, { seed: seedIn }: GenerateOptions = {}): PinConfig[] {
   const seed = seedIn ?? Date.now();
   const rand = rng(seed);
-  const headlines = buildHeadlines(post);
+  const headline = headlineFor(post);
   const subtitle = truncate(post.description, 120);
   const siteLabel = siteLabelFor(post);
   const images = shuffle(post.images, rand);
   const ctas = shuffle(CTA_OPTIONS, rand);
 
-  const pins: PinConfig[] = [];
-  const photoSets = Math.max(1, Math.min(photosPerTemplate, images.length));
-  for (const template of TEMPLATES) {
-    for (let p = 0; p < photoSets; p++) {
-      const imgs: string[] = [];
-      for (let k = 0; k < template.imagesUsed && images.length; k++) imgs.push(images[(p + k) % images.length]);
-      const i = pins.length;
-      pins.push({
-        id: `${seed}-${i}`,
-        template: template.id,
-        headline: p > 0 && headlines.length > 1 ? headlines[p % headlines.length] : headlines[0],
-        subtitle,
-        cta: ctas[i % ctas.length],
-        siteLabel,
-        images: imgs,
-        showCta: true,
-        showSite: true,
-        showSubtitle: subtitle.length > 0,
-      });
-    }
-  }
-  const ordered = shuffle(pins, rand);
-  return limit ? ordered.slice(0, limit) : ordered;
+  return TEMPLATES.map((template, i) => {
+    const imgs: string[] = [];
+    for (let k = 0; k < template.imagesUsed && images.length; k++) imgs.push(images[(i + k) % images.length]);
+    return {
+      id: `${seed}-${i}`,
+      template: template.id,
+      headline,
+      subtitle,
+      cta: ctas[i % ctas.length],
+      siteLabel,
+      images: imgs,
+      showCta: true,
+      showSite: true,
+      showSubtitle: subtitle.length > 0,
+    };
+  });
 }
 
 /** Give a single pin a different photo (and template, if more than one exists) while keeping its copy. */

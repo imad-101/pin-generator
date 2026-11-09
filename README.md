@@ -5,7 +5,7 @@ Paste a blog post URL and get a set of Pinterest pins built from a library of ha
 ## How it works
 
 1. **Template library** (`lib/templates.ts`, `components/pins/templates/`): each template is a React component that reproduces a reference pin exactly, including fonts, sizes, spacing and colours. Templates are written by hand from a reference image and registered in `components/pins/PinRenderer.tsx`.
-2. **Generate** (`components/dashboard/Dashboard.tsx`): paste a post URL. `app/api/scrape/route.ts` pulls the title, description, headings and images; `lib/generate.ts` fills every template with that content, pairing each layout with several of the post's photos.
+2. **Generate** (`components/dashboard/Dashboard.tsx`): paste a post URL. `app/api/scrape/route.ts` pulls the title, description, headings and images; `lib/generate.ts` makes exactly one pin per template, each with the post's title as the headline and a random pick of the post's photos.
 3. **Tweak and export**: the pin editor changes copy, swaps photos (including uploads), switches layouts, and offers alternative colour schemes (`lib/palettes.ts`) and headline fonts (`lib/fonts.ts`). Generated pins always start with the reference's exact colours and font. `lib/export.tsx` rasterises pins off-screen at 2000 × 3000 px and can zip a whole set.
 
 Remote images go through `app/api/image-proxy/route.ts` so they can be drawn to canvas. Private hosts are rejected. Nothing needs an API key.

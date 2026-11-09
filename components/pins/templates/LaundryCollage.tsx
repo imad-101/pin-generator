@@ -54,7 +54,7 @@ export function LaundryCollage({ config }: TemplateProps) {
   const { number, rest } = splitLeadingNumber(config.headline);
   const photos = config.images;
   const palette = getPalette(config.paletteId);
-  const font = getFontOption(config.fontId);
+  const font = getFontOption(config.fontId ?? "barlow");
 
   const stroke = { width: OUTLINE, color: palette.outline };
   const textStyle = {

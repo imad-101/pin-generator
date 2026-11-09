@@ -16,6 +16,8 @@ export type TemplateMeta = {
   name: string;
   description: string;
   imagesUsed: number; // how many photos the layout consumes
+  /** Font option id used when a pin has none chosen (the reference pin's font). */
+  defaultFontId: string;
 };
 
 export type PinConfig = {

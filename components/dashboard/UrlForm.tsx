@@ -6,15 +6,11 @@ import { Icon } from "./icons";
 export function UrlForm({
   initialUrl,
   loading,
-  count,
-  onCount,
   onSubmit,
   onSample,
 }: {
   initialUrl: string;
   loading: boolean;
-  count: number;
-  onCount: (n: number) => void;
   onSubmit: (url: string) => void;
   onSample: () => void;
 }) {
@@ -44,18 +40,6 @@ export function UrlForm({
           />
         </label>
         <div className="flex items-center gap-2">
-          <select
-            value={count}
-            onChange={(e) => onCount(Number(e.target.value))}
-            className="h-12 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700 outline-none focus:border-brand"
-            title="How many pins to generate"
-          >
-            {[6, 12, 18, 24].map((n) => (
-              <option key={n} value={n}>
-                {n} pins
-              </option>
-            ))}
-          </select>
           <button
             type="submit"
             disabled={loading}
@@ -67,7 +51,7 @@ export function UrlForm({
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
-        <span>We read the post title, description, headings and images. Nothing is stored on a server.</span>
+        <span>We read the post title, description and images. Nothing is stored on a server.</span>
         <button type="button" onClick={onSample} className="font-semibold text-brand hover:underline">
           Try a sample post
         </button>

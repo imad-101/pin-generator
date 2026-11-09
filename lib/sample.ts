@@ -6,7 +6,7 @@ export const SAMPLE_POST: ScrapedPost = {
   title: "21 Small Laundry Room Ideas",
   description:
     "Warm textures, layered lighting and a few thrifted finds are all it takes to make your living room feel like autumn. Here are the ideas we keep coming back to.",
-  siteName: "The Nesting Edit",
+  siteName: "www.thenestingedit.com",
   domain: "example.com",
   favicon: null,
   author: "Maya",

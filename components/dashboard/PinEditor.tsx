@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { PinConfig, ScrapedPost } from "@/lib/types";
 import { TEMPLATES, getTemplate } from "@/lib/templates";
-import { CTA_OPTIONS, buildHeadlines } from "@/lib/generate";
+import { CTA_OPTIONS } from "@/lib/generate";
 import { PALETTES, DEFAULT_PALETTE_ID } from "@/lib/palettes";
-import { FONT_OPTIONS, DEFAULT_FONT_ID } from "@/lib/fonts";
+import { FONT_OPTIONS } from "@/lib/fonts";
 import { proxied } from "@/lib/proxy";
 import { PinFrame } from "@/components/pins/PinFrame";
 import { PinRenderer } from "@/components/pins/PinRenderer";
@@ -32,7 +32,6 @@ export function PinEditor({
   const imagesUsed = template?.imagesUsed ?? 1;
   const slot = slotState < imagesUsed ? slotState : 0;
   const imagePool = [...uploads, ...(post?.images ?? []), ...pin.images.filter((i) => !post?.images.includes(i) && !uploads.includes(i))];
-  const headlineIdeas = post ? buildHeadlines(post) : [];
 
   const set = <K extends keyof PinConfig>(key: K, value: PinConfig[K]) => onChange({ ...pin, [key]: value });
 
@@ -113,21 +112,6 @@ export function PinEditor({
             <Section title="Copy">
               <Field label="Headline">
                 <textarea value={pin.headline} onChange={(e) => set("headline", e.target.value)} rows={2} className={inputCls} />
-                {headlineIdeas.length > 1 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {headlineIdeas.map((h) => (
-                      <button
-                        key={h}
-                        onClick={() => set("headline", h)}
-                        className={`rounded-full border px-2.5 py-1 text-[11px] ${
-                          h === pin.headline ? "border-brand bg-brand-soft text-brand" : "border-gray-200 text-gray-600 hover:border-gray-400"
-                        }`}
-                      >
-                        {h}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </Field>
               <Field label="Subtitle" toggle={{ on: pin.showSubtitle, set: (v) => set("showSubtitle", v) }}>
                 <textarea value={pin.subtitle} onChange={(e) => set("subtitle", e.target.value)} rows={2} className={inputCls} />
@@ -203,7 +187,7 @@ export function PinEditor({
             <Section title="Font">
               <div className="flex flex-wrap gap-2">
                 {FONT_OPTIONS.map((f) => {
-                  const active = (pin.fontId ?? DEFAULT_FONT_ID) === f.id;
+                  const active = (pin.fontId ?? template?.defaultFontId ?? FONT_OPTIONS[0].id) === f.id;
                   return (
                     <button
                       key={f.id}
