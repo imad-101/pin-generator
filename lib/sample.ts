@@ -3,7 +3,7 @@ import type { ScrapedPost } from "./types";
 /** Built-in example so the dashboard can be demoed without scraping anything. */
 export const SAMPLE_POST: ScrapedPost = {
   url: "https://example.com/blog/cozy-fall-living-room-ideas",
-  title: "21 Small Laundry Room Ideas",
+  title: "21 Small Laundry Room Ideas for a Tidy Home",
   description:
     "Warm textures, layered lighting and a few thrifted finds are all it takes to make your living room feel like autumn. Here are the ideas we keep coming back to.",
   siteName: "www.thenestingedit.com",

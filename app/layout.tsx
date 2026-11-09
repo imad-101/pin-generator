@@ -20,6 +20,7 @@ import {
   Alfa_Slab_One,
   Lora,
   Playfair_Display,
+  Zilla_Slab,
 } from "next/font/google";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ const archivoBlack = Archivo_Black({ subsets: ["latin"], weight: "400", variable
 const alfaSlab = Alfa_Slab_One({ subsets: ["latin"], weight: "400", variable: "--font-alfa-slab" });
 const lora = Lora({ subsets: ["latin"], weight: ["700"], variable: "--font-lora" });
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700"], variable: "--font-playfair" });
+const zilla = Zilla_Slab({ subsets: ["latin"], weight: ["700"], variable: "--font-zilla" });
 
 const fonts = [
   inter,
@@ -67,6 +69,7 @@ const fonts = [
   alfaSlab,
   lora,
   playfair,
+  zilla,
 ];
 
 const PRELOAD: [string, number][] = [
@@ -89,6 +92,7 @@ const PRELOAD: [string, number][] = [
   ["--font-alfa-slab", 400],
   ["--font-lora", 700],
   ["--font-playfair", 700],
+  ["--font-zilla", 700],
 ];
 
 export const metadata: Metadata = {

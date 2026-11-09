@@ -28,6 +28,13 @@ export const TEMPLATES: TemplateMeta[] = [
     imagesUsed: 4,
     defaultFontId: "lora",
   },
+  {
+    id: "linen-band",
+    name: "Linen band",
+    description: "Four photos around a tan band with an outlined slab title, tracked caps line, tagline pill and a number circle.",
+    imagesUsed: 4,
+    defaultFontId: "zilla",
+  },
 ];
 
 export type TemplateId = (typeof TEMPLATES)[number]["id"];
