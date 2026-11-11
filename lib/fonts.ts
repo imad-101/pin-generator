@@ -38,6 +38,7 @@ export const FONT_OPTIONS: FontOption[] = [
   // Serif
   { id: "lora", name: "Lora", family: "var(--font-lora)", weight: 700, scale: 1, letterSpacing: "0em" },
   { id: "playfair", name: "Playfair Display", family: "var(--font-playfair)", weight: 700, scale: 1, letterSpacing: "0em" },
+  { id: "playfair-black", name: "Playfair Black", family: "var(--font-playfair)", weight: 900, scale: 1, letterSpacing: "0em" },
   { id: "zilla", name: "Zilla Slab", family: "var(--font-zilla)", weight: 700, scale: 1, letterSpacing: "0em" },
 ];
 

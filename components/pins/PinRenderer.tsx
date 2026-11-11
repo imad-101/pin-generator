@@ -4,6 +4,7 @@ import { LaundryCollage } from "./templates/LaundryCollage";
 import { BandBadge } from "./templates/BandBadge";
 import { MoodboardCard } from "./templates/MoodboardCard";
 import { LinenBand } from "./templates/LinenBand";
+import { FramedGallery } from "./templates/FramedGallery";
 
 export type TemplateProps = { config: PinConfig };
 
@@ -16,6 +17,7 @@ const REGISTRY: Record<string, ComponentType<TemplateProps>> = {
   "band-badge": BandBadge,
   "moodboard-card": MoodboardCard,
   "linen-band": LinenBand,
+  "framed-gallery": FramedGallery,
 };
 
 /** Renders a pin at its native 1000x1500 size. Wrap in <PinFrame> to scale for previews. */

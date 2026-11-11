@@ -45,7 +45,7 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["900"], variable: "--font
 const archivoBlack = Archivo_Black({ subsets: ["latin"], weight: "400", variable: "--font-archivo-black" });
 const alfaSlab = Alfa_Slab_One({ subsets: ["latin"], weight: "400", variable: "--font-alfa-slab" });
 const lora = Lora({ subsets: ["latin"], weight: ["700"], variable: "--font-lora" });
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700"], variable: "--font-playfair" });
+const playfair = Playfair_Display({ subsets: ["latin"], weight: ["700", "900"], variable: "--font-playfair" });
 const zilla = Zilla_Slab({ subsets: ["latin"], weight: ["700"], variable: "--font-zilla" });
 
 const fonts = [
@@ -92,6 +92,7 @@ const PRELOAD: [string, number][] = [
   ["--font-alfa-slab", 400],
   ["--font-lora", 700],
   ["--font-playfair", 700],
+  ["--font-playfair", 900],
   ["--font-zilla", 700],
 ];
 

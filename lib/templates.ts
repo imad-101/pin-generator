@@ -35,6 +35,13 @@ export const TEMPLATES: TemplateMeta[] = [
     imagesUsed: 4,
     defaultFontId: "zilla",
   },
+  {
+    id: "framed-gallery",
+    name: "Framed gallery",
+    description: "Cream canvas with four dark-framed photos around a framed title card in heavy serif, site name below.",
+    imagesUsed: 4,
+    defaultFontId: "playfair-black",
+  },
 ];
 
 export type TemplateId = (typeof TEMPLATES)[number]["id"];
